@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+using Clock = std::chrono::steady_clock;
+
 struct Point {
     int x, y;
     bool operator==(const Point& other) const {
@@ -54,9 +56,12 @@ public:
         
         fdFlags = fcntl(STDIN_FILENO, F_GETFL, 0);
         fcntl(STDIN_FILENO, F_SETFL, fdFlags | O_NONBLOCK);
+        
+        std::cout << "\033[?1049h" << std::flush;
     }
     
     void restoreTerminal() {
+        std::cout << "\033[?1049l" << std::flush;
         tcsetattr(STDIN_FILENO, TCSANOW, &oldTio);
         fcntl(STDIN_FILENO, F_SETFL, fdFlags);
     }
@@ -133,7 +138,7 @@ public:
     }
     
     void render() const {
-        std::cout << "\033[2J\033[H";
+        std::cout << "\033[H";
         
         std::cout << "╔";
         for (int i = 0; i < width; ++i) std::cout << "══";
@@ -162,17 +167,28 @@ public:
         
         std::cout << "Score: " << score << "  |  Controls: WASD/Arrows | P: Pause | Q: Quit\n";
         if (paused) std::cout << "*** PAUSED ***\n";
+        std::cout << std::flush;
     }
     
+    int getScore() const { return score; }
+    
     void run() {
-        while (!gameOver) {
-            handleInput();
-            update();
-            render();
-            std::this_thread::sleep_for(std::chrono::milliseconds(150));
-        }
+        const auto frameTime = std::chrono::milliseconds(150);
+        auto lastFrame = Clock::now();
         
-        std::cout << "\nGame Over! Final Score: " << score << "\n";
+        while (!gameOver) {
+            auto now = Clock::now();
+            auto elapsed = now - lastFrame;
+            
+            if (elapsed >= frameTime) {
+                handleInput();
+                update();
+                render();
+                lastFrame = now;
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+        }
     }
 };
 
@@ -184,5 +200,6 @@ int main() {
     SnakeGame game;
     game.run();
     
+    std::cout << "Game Over! Final Score: " << game.getScore() << "\n";
     return 0;
 }
