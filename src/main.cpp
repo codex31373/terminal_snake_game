@@ -6,6 +6,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "render_engine.h"
 
 using Clock = std::chrono::steady_clock;
 
@@ -25,13 +26,13 @@ private:
     int score;
     bool gameOver;
     bool paused;
-    termios oldTio;
-    int fdFlags;
     
     std::mt19937 rng;
+    RenderEngine& renderer;
 
 public:
-    SnakeGame(int w = 40, int h = 20) : width(w), height(h), dirX(1), dirY(0), score(0), gameOver(false), paused(false) {
+    SnakeGame(RenderEngine& render, int w = 40, int h = 20) 
+        : width(w), height(h), dirX(1), dirY(0), score(0), gameOver(false), paused(false), renderer(render) {
         rng.seed(std::chrono::steady_clock::now().time_since_epoch().count());
         
         int startX = width / 2;
@@ -41,29 +42,6 @@ public:
         snake.push_back({startX - 2, startY});
         
         spawnFood();
-        setupTerminal();
-    }
-    
-    ~SnakeGame() {
-        restoreTerminal();
-    }
-    
-    void setupTerminal() {
-        tcgetattr(STDIN_FILENO, &oldTio);
-        termios newTio = oldTio;
-        newTio.c_lflag &= ~(ICANON | ECHO);
-        tcsetattr(STDIN_FILENO, TCSANOW, &newTio);
-        
-        fdFlags = fcntl(STDIN_FILENO, F_GETFL, 0);
-        fcntl(STDIN_FILENO, F_SETFL, fdFlags | O_NONBLOCK);
-        
-        std::cout << "\033[?1049h\033[?25l" << std::flush;
-    }
-    
-    void restoreTerminal() {
-        std::cout << "\033[?25h\033[?1049l" << std::flush;
-        tcsetattr(STDIN_FILENO, TCSANOW, &oldTio);
-        fcntl(STDIN_FILENO, F_SETFL, fdFlags);
     }
     
     void spawnFood() {
@@ -107,6 +85,9 @@ public:
                     case 'd': case 'D': if (dirX != 1) { dirX = 1; dirY = 0; } break;
                 }
             }
+            // Flush any remaining input to prevent lag
+            char flush;
+            while (read(STDIN_FILENO, &flush, 1) == 1);
         }
     }
     
@@ -137,14 +118,17 @@ public:
         }
     }
     
-    void render() const {
-        std::cout << "\033[H";
+    void render() {
+        renderer.moveCursor(0, 0);
         
+        // Top border
         std::cout << "╔";
         for (int i = 0; i < width; ++i) std::cout << "══";
-        std::cout << "╗\n";
+        std::cout << "╗";
         
+        // Game area
         for (int y = 0; y < height; ++y) {
+            renderer.moveCursor(0, y + 1);
             std::cout << "║";
             for (int x = 0; x < width; ++x) {
                 Point p{x, y};
@@ -158,16 +142,20 @@ public:
                     std::cout << "  ";
                 }
             }
-            std::cout << "║\n";
+            std::cout << "║";
         }
         
+        // Bottom border
+        renderer.moveCursor(0, height + 1);
         std::cout << "╚";
         for (int i = 0; i < width; ++i) std::cout << "══";
-        std::cout << "╝\n";
+        std::cout << "╝";
         
-        std::cout << "Score: " << score << "  |  Controls: WASD/Arrows | P: Pause | Q: Quit\n";
-        if (paused) std::cout << "*** PAUSED ***\n";
-        std::cout << std::flush;
+        // Status line
+        renderer.moveCursor(0, height + 2);
+        std::cout << "Score: " << score << "  |  Controls: WASD/Arrows | P: Pause | Q: Quit";
+        if (paused) std::cout << " | *** PAUSED ***";
+        renderer.flush();
     }
     
     int getScore() const { return score; }
@@ -197,9 +185,13 @@ int main() {
     std::cout << "Press any key to start...\n";
     std::cin.get();
     
-    SnakeGame game;
+    RenderEngine renderer(80, 24);
+    renderer.init();
+    
+    SnakeGame game(renderer);
     game.run();
     
+    renderer.shutdown();
     std::cout << "Game Over! Final Score: " << game.getScore() << "\n";
     return 0;
 }
