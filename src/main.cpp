@@ -57,11 +57,11 @@ public:
         fdFlags = fcntl(STDIN_FILENO, F_GETFL, 0);
         fcntl(STDIN_FILENO, F_SETFL, fdFlags | O_NONBLOCK);
         
-        std::cout << "\033[?1049h" << std::flush;
+        std::cout << "\033[?1049h\033[?25l" << std::flush;
     }
     
     void restoreTerminal() {
-        std::cout << "\033[?1049l" << std::flush;
+        std::cout << "\033[?25h\033[?1049l" << std::flush;
         tcsetattr(STDIN_FILENO, TCSANOW, &oldTio);
         fcntl(STDIN_FILENO, F_SETFL, fdFlags);
     }
