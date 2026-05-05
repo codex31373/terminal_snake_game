@@ -187,10 +187,11 @@ int main() {
     std::cout << "Press any key to start...\n";
     std::cin.get();
 
-    RenderEngine renderer(280, 154);
+    int screenW = 100, screenH = 30;
+    RenderEngine renderer(screenW, screenH);
     renderer.init();
 
-    PhysicsDemo demo(renderer);
+    PhysicsDemo demo(renderer, screenW, screenH);
     demo.run();
 
     renderer.shutdown();
