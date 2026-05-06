@@ -26,8 +26,8 @@ jobs:
 
       - name: Commit and push
         run: |
-          git config user.name "Mustafa Z"          # your GitHub name
-          git config user.email "your@email.com"      # your GitHub email
+          git config user.name "Mustafa Zaban"          # your GitHub name
+          git config user.email "midnight90@mail.bg"      # your GitHub email
           git add LICENSE
           if git diff --cached --quiet; then
             echo "No changes to commit"
