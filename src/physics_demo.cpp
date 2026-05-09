@@ -9,7 +9,7 @@ int main() {
     std::cout << "Press any key to start...\n";
     std::cin.get();
 
-    int screenW = 80, screenH = 20;
+    int screenW = 150, screenH = 45;
     RenderEngine renderer(screenW, screenH);
     renderer.init();
 

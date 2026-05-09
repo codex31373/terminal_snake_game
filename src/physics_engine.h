@@ -7,7 +7,7 @@
 
 struct PhysicsBody {
     b2Body* body;
-    char symbol;
+    std::string symbol;
     float radius;
     bool isCircle;
     std::string color;
