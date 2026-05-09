@@ -26,7 +26,7 @@ void PhysicsGame::draw(RenderEngine& renderer) const {
 
         if (screenX >= 0 && screenX < w && screenY >= 0 && screenY < h) {
             renderer.moveCursor(screenX, screenY);
-            std::cout << pb.symbol;
+            std::cout << pb.color << pb.symbol << "\033[0m";
         }
     }
 

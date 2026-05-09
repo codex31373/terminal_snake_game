@@ -3,6 +3,16 @@
 #include <box2d/b2_circle_shape.h>
 #include <box2d/b2_fixture.h>
 
+static const char* COLORS[] = {
+    "\033[31m", "\033[32m", "\033[33m", "\033[34m",
+    "\033[35m", "\033[36m", "\033[37m", "\033[91m",
+    "\033[92m", "\033[93m", "\033[94m", "\033[95m", "\033[96m"
+};
+
+static std::string randomColor() {
+    return COLORS[rand() % 13];
+}
+
 PhysicsEngine::PhysicsEngine(int w, int h)
     : world(b2Vec2(0.0f, 10.0f)), width(w), height(h), scale(2.0f) {
     addGround();
@@ -47,7 +57,7 @@ void PhysicsEngine::addBox(float x, float y, float w, float h) {
     fixtureDef.restitution = 0.6f;
     body->CreateFixture(&fixtureDef);
 
-    bodies.push_back({body, '#', std::max(w, h) * scale, false});
+    bodies.push_back({body, '#', std::max(w, h) * scale, false, randomColor()});
 }
 
 void PhysicsEngine::addCircle(float x, float y, float r) {
@@ -66,7 +76,7 @@ void PhysicsEngine::addCircle(float x, float y, float r) {
     fixtureDef.restitution = 0.7f;
     body->CreateFixture(&fixtureDef);
 
-    bodies.push_back({body, 'O', r * scale, true});
+    bodies.push_back({body, 'O', r * scale, true, randomColor()});
 }
 
 void PhysicsEngine::step(float timeStep) {

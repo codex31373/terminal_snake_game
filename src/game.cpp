@@ -1,9 +1,18 @@
 #include "game.h"
 #include <iostream>
 #include <chrono>
+#include <thread>
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+static void beep(int count = 1, int delayMs = 0) {
+    for (int i = 0; i < count; ++i) {
+        std::cout << '\a' << std::flush;
+        if (delayMs > 0 && i < count - 1)
+            std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
+    }
+}
 
 SnakeGame::SnakeGame(int w, int h)
     : width(w), height(h), dirX(1), dirY(0), score(0), gameOver(false), paused(false) {
@@ -71,12 +80,14 @@ void SnakeGame::update() {
 
     if (newHead.x < 0 || newHead.x >= width || newHead.y < 0 || newHead.y >= height) {
         gameOver = true;
+        beep(3, 150);
         return;
     }
 
     for (size_t i = 0; i < snake.size(); ++i) {
         if (snake[i] == newHead) {
             gameOver = true;
+            beep(3, 150);
             return;
         }
     }
@@ -85,6 +96,7 @@ void SnakeGame::update() {
 
     if (newHead == food) {
         score += 10;
+        beep(1);
         spawnFood();
     } else {
         snake.pop_back();

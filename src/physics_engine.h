@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <box2d/b2_world.h>
 #include <box2d/b2_body.h>
 
@@ -9,6 +10,7 @@ struct PhysicsBody {
     char symbol;
     float radius;
     bool isCircle;
+    std::string color;
 };
 
 class PhysicsEngine {
