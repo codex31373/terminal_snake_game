@@ -24,14 +24,14 @@ jobs:
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           sed -i "s/Last updated: .*/Last updated: $TIMESTAMP/" LICENSE
 
-      - name: Commit and push
-        run: |
-          git config user.name "Mustafa Zaban"          # your GitHub name
-          git config user.email "midnight90@mail.bg"      # your GitHub email
-          git add LICENSE
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
-          git commit -m "chore: update timestamp [daily bot]"
-          git push
+      #- name: Commit and push
+        #run: |
+          #git config user.name "Mustafa Zaban"          # your GitHub name
+          #git config user.email "midnight90@mail.bg"      # your GitHub email
+          #git add LICENSE
+          #if git diff --cached --quiet; then
+           # echo "No changes to commit"
+           # exit 0
+          #fi
+          #git commit -m "chore: update timestamp [daily bot]"
+          #git push
